@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+
 import com.google.common.hash.Hashing;
 
 public final class HashApp {
@@ -46,7 +47,10 @@ public final class HashApp {
                     .hashString(value, StandardCharsets.UTF_8)
                     .asInt();
 
-            int bucketNumber = Math.floorMod(hash, bucketCount) + 1;
+            long unsignedHash = Integer.toUnsignedLong(hash);
+            int remainder = (int) (unsignedHash % bucketCount);
+
+            int bucketNumber = remainder == 0 ? bucketCount : remainder;
 
             System.out.printf("\"%s\" maps to %d.txt%n", value, bucketNumber);
         }
