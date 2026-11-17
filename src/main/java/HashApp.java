@@ -2,7 +2,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-
+import com.google.common.hash.Hashing;
 
 public final class HashApp {
     public static void main(String[] args) throws IOException {
@@ -42,7 +42,13 @@ public final class HashApp {
                 break;
             }
 
-            System.out.println("Received: " + value);
+            int hash = Hashing.murmur3_32_fixed()
+                    .hashString(value, StandardCharsets.UTF_8)
+                    .asInt();
+
+            int bucketNumber = Math.floorMod(hash, bucketCount) + 1;
+
+            System.out.printf("\"%s\" maps to %d.txt%n", value, bucketNumber);
         }
     }
 
