@@ -2,6 +2,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 import com.google.common.hash.Hashing;
 
@@ -32,6 +36,9 @@ public final class HashApp {
 
         System.out.printf("hash_app started with %d buckets of %d symbols each.%n", bucketCount, bucketSize);
 
+        Path bucketDirectory = Paths.get("bucket");
+        Files.createDirectories(bucketDirectory);
+
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
 
         while (true) {
@@ -52,7 +59,36 @@ public final class HashApp {
 
             int bucketNumber = remainder == 0 ? bucketCount : remainder;
 
-            System.out.printf("\"%s\" maps to %d.txt%n", value, bucketNumber);
+            Path bucketPath = bucketDirectory.resolve(bucketNumber + ".txt");
+
+            String existingContent = "";
+            if (Files.exists(bucketPath)) {
+                existingContent = new String(
+                        Files.readAllBytes(bucketPath),
+                        StandardCharsets.UTF_8
+                );
+            }
+
+            long existingSymbols = existingContent.codePointCount(0, existingContent.length());
+            long newSymbols = value.codePointCount(0, value.length());
+
+            if (existingSymbols + newSymbols > bucketSize) {
+                System.out.printf(
+                        "Bucket %d.txt is full; this string was not stored yet.%n",
+                        bucketNumber
+                );
+                continue;
+            }
+
+            Files.write(
+                    bucketPath,
+                    value.getBytes(StandardCharsets.UTF_8),
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.WRITE,
+                    StandardOpenOption.APPEND
+            );
+
+            System.out.printf("\"%s\" was stored in %d.txt%n", value, bucketNumber);
         }
     }
 
